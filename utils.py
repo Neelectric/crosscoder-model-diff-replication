@@ -177,20 +177,49 @@ def arg_parse_update_cfg(default_cfg):
     print(json.dumps(cfg, indent=2))
     return cfg    
 
+#old function definition by authors
+# def load_pile_lmsys_mixed_tokens():
+#     try:
+#         print("Loading data from disk")
+#         all_tokens = torch.load("/workspace/data/pile-lmsys-mix-1m-tokenized-gemma-2.pt")
+#     except:
+#         print("Data is not cached. Loading data from HF")
+#         data = load_dataset(
+#             "ckkissane/pile-lmsys-mix-1m-tokenized-gemma-2", 
+#             split="train", 
+#             cache_dir="/workspace/cache/"
+#         )
+#         data.save_to_disk("/workspace/data/pile-lmsys-mix-1m-tokenized-gemma-2.hf")
+#         data.set_format(type="torch", columns=["input_ids"])
+#         all_tokens = data["input_ids"]
+#         torch.save(all_tokens, "/workspace/data/pile-lmsys-mix-1m-tokenized-gemma-2.pt")
+#         print(f"Saved tokens to disk")
+#     return all_tokens
+
+#my rewrite to properly take care of relative paths
 def load_pile_lmsys_mixed_tokens():
+    current_dir = os.getcwd()
+    if current_dir.endswith("crosscoder-model-diff-replication"):
+        # move up one directory
+        current_dir = os.path.dirname(current_dir)
+    data_path = os.path.join(current_dir, "data/pile-lmsys-mix-1m-tokenized-gemma-2.pt")
+    cache_dir = os.path.join(current_dir, "cache")
+    hf_data_path = os.path.join(current_dir, "data/pile-lmsys-mix-1m-tokenized-gemma-2.hf")
+    
+
     try:
         print("Loading data from disk")
-        all_tokens = torch.load("/workspace/data/pile-lmsys-mix-1m-tokenized-gemma-2.pt")
+        all_tokens = torch.load(data_path)
     except:
         print("Data is not cached. Loading data from HF")
         data = load_dataset(
-            "ckkissane/pile-lmsys-mix-1m-tokenized-gemma-2", 
-            split="train", 
-            cache_dir="/workspace/cache/"
+            "ckkissane/pile-lmsys-mix-1m-tokenized-gemma-2",
+            split="train",
+            cache_dir=cache_dir,
         )
-        data.save_to_disk("/workspace/data/pile-lmsys-mix-1m-tokenized-gemma-2.hf")
+        data.save_to_disk(hf_data_path)
         data.set_format(type="torch", columns=["input_ids"])
         all_tokens = data["input_ids"]
-        torch.save(all_tokens, "/workspace/data/pile-lmsys-mix-1m-tokenized-gemma-2.pt")
+        torch.save(all_tokens, data_path)
         print(f"Saved tokens to disk")
     return all_tokens

@@ -2,7 +2,12 @@
 from utils import *
 from trainer import Trainer
 # %%
-device = 'cuda:0'
+# device = 'cuda:0'
+device = "cpu"
+if torch.cuda.is_available():
+    device = "cuda:0"
+elif torch.backends.mps.is_available():
+    device = "mps"
 
 base_model = HookedTransformer.from_pretrained(
     "gemma-2-2b", 
@@ -20,7 +25,7 @@ all_tokens = load_pile_lmsys_mixed_tokens()
 # %%
 default_cfg = {
     "seed": 49,
-    "batch_size": 4096,
+    "batch_size": 256, #originally 4096
     "buffer_mult": 128,
     "lr": 5e-5,
     "num_tokens": 400_000_000,
@@ -33,13 +38,13 @@ default_cfg = {
     "enc_dtype": "fp32",
     "model_name": "gemma-2-2b",
     "site": "resid_pre",
-    "device": "cuda:0",
+    "device": device,
     "model_batch_size": 4,
     "log_every": 100,
     "save_every": 30000,
     "dec_init_norm": 0.08,
     "hook_point": "blocks.14.hook_resid_pre",
-    "wandb_project": "YOUR_WANDB_PROJECT",
+    "wandb_project": "R1-crosscoder",
     "wandb_entity": "YOUR_WANDB_ENTITY",
 }
 cfg = arg_parse_update_cfg(default_cfg)
