@@ -77,7 +77,7 @@ class Buffer:
             else:
                 num_batches = self.buffer_batches // 2
             self.first = False
-            for _ in tqdm.trange(0, num_batches, self.cfg["model_batch_size"]):
+            for _ in tqdm.trange(0, num_batches, self.cfg["model_batch_size"], dynamic_ncols=True):
                 tokens = self.all_tokens[
                     self.token_pointer : min(
                         self.token_pointer + self.cfg["model_batch_size"], num_batches

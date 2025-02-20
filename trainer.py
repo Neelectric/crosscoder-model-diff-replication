@@ -75,7 +75,7 @@ class Trainer:
     def train(self):
         self.step_counter = 0
         try:
-            for i in tqdm.trange(self.total_steps):
+            for i in tqdm.trange(self.total_steps, dynamic_ncols=True):
                 loss_dict = self.step()
                 if i % self.cfg["log_every"] == 0:
                     self.log(loss_dict)

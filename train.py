@@ -29,10 +29,10 @@ all_tokens = load_pile_lmsys_mixed_tokens()
 # %%
 default_cfg = {
     "seed": 49,
-    "batch_size": 4096, #originally 4096
+    "batch_size": 8192, #originally 4096
     "buffer_mult": 128,
     "lr": 5e-5,
-    "num_tokens": 400_000_000,
+    "num_tokens": 400_000_000, #originally 400_000_000
     "l1_coeff": 2,
     "beta1": 0.9,
     "beta2": 0.999,
@@ -45,7 +45,7 @@ default_cfg = {
     "device": device,
     "model_batch_size": 4,
     "log_every": 100,
-    "save_every": 30000,
+    "save_every": 10, # originally 30000 
     "dec_init_norm": 0.08,
     "hook_point": "blocks.14.hook_resid_pre",
     "wandb_project": "R1-crosscoder",
