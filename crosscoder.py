@@ -125,7 +125,7 @@ class CrossCoder(nn.Module):
         return LossOutput(l2_loss=l2_loss, l1_loss=l1_loss, l0_loss=l0_loss, explained_variance=explained_variance, explained_variance_A=explained_variance_A, explained_variance_B=explained_variance_B)
 
     def create_save_dir(self):
-        base_dir = Path("/workspace/crosscoder-model-diff-replication/checkpoints")
+        base_dir = Path("/crosscoder-model-diff-replication/checkpoints")
         version_list = [
             int(file.name.split("_")[1])
             for file in list(SAVE_DIR.iterdir())

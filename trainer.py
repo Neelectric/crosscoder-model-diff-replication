@@ -23,7 +23,10 @@ class Trainer:
         )
         self.step_counter = 0
 
-        wandb.init(project=cfg["wandb_project"])
+        wandb.init(project=cfg["wandb_project"], 
+                   entity=cfg["wandb_entity"], 
+                   name=cfg["run_name"],
+                   config=cfg)
 
     def lr_lambda(self, step):
         if step < 0.8 * self.total_steps:

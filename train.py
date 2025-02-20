@@ -4,19 +4,23 @@ from trainer import Trainer
 # %%
 # device = 'cuda:0'
 device = "cpu"
+n_devices = 1
 if torch.cuda.is_available():
-    device = "cuda:0"
+    device = "cuda"
+    n_devices = torch.cuda.device_count()
 elif torch.backends.mps.is_available():
     device = "mps"
 
 base_model = HookedTransformer.from_pretrained(
     "gemma-2-2b", 
     device=device, 
+    n_devices=n_devices,
 )
 
 chat_model = HookedTransformer.from_pretrained(
     "gemma-2-2b-it", 
     device=device, 
+    n_devices=n_devices,
 )
 
 # %%
@@ -25,7 +29,7 @@ all_tokens = load_pile_lmsys_mixed_tokens()
 # %%
 default_cfg = {
     "seed": 49,
-    "batch_size": 256, #originally 4096
+    "batch_size": 4096, #originally 4096
     "buffer_mult": 128,
     "lr": 5e-5,
     "num_tokens": 400_000_000,
@@ -45,7 +49,8 @@ default_cfg = {
     "dec_init_norm": 0.08,
     "hook_point": "blocks.14.hook_resid_pre",
     "wandb_project": "R1-crosscoder",
-    "wandb_entity": "YOUR_WANDB_ENTITY",
+    "wandb_entity": "Neelectric",
+    "run_name": "Gemma-2-2b_crosscoder",
 }
 cfg = arg_parse_update_cfg(default_cfg)
 
