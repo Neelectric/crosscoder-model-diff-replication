@@ -10,7 +10,7 @@ from huggingface_hub import hf_hub_download
 from typing import NamedTuple
 
 DTYPES = {"fp32": torch.float32, "fp16": torch.float16, "bf16": torch.bfloat16}
-SAVE_DIR = Path("/crosscoder-model-diff-replication/checkpoints")
+SAVE_DIR = Path("/home/user/repos/R1-crosscoder/crosscoder-model-diff-replication/checkpoints/")
 
 class LossOutput(NamedTuple):
     # loss: torch.Tensor
@@ -125,7 +125,7 @@ class CrossCoder(nn.Module):
         return LossOutput(l2_loss=l2_loss, l1_loss=l1_loss, l0_loss=l0_loss, explained_variance=explained_variance, explained_variance_A=explained_variance_A, explained_variance_B=explained_variance_B)
 
     def create_save_dir(self):
-        base_dir = Path("/crosscoder-model-diff-replication/checkpoints/")
+        base_dir = Path("/home/user/repos/R1-crosscoder/crosscoder-model-diff-replication/checkpoints/")
         current_dir = os.getcwd()
         save_dir = SAVE_DIR
         print("Current directory: " + os.getcwd())
