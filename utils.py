@@ -36,11 +36,10 @@ import pandas as pd
 
 from html import escape
 import colorsys
-
-
 import wandb
 
 import plotly.graph_objects as go
+from huggingface_hub import snapshot_download
 
 update_layout_set = {
     "xaxis_range", "yaxis_range", "hovermode", "xaxis_title", "yaxis_title", "colorbar", "colorscale", "coloraxis",
@@ -196,15 +195,46 @@ def arg_parse_update_cfg(default_cfg):
 #         print(f"Saved tokens to disk")
 #     return all_tokens
 
+tokenization_progress = {
+    "gemma-2": "ckkissane/pile-lmsys-mix-1m-tokenized-gemma-2",
+    "qwen": False,
+}
+
+def tokenize(model_type):
+    # with gemma, all_tokens has shape [963556, 1024], so 986,681,344 tokens total
+    print("Downloading data")
+    folder = snapshot_download(
+                    "science-of-finetuning/fineweb-1m-sample", 
+                    repo_type="dataset",
+                    local_dir="/home/user/repos/R1-crosscoder/data",
+                    # replace "data/CC-MAIN-2023-50/*" with "sample/100BT/*" to use the 100BT sample
+                    # allow_patterns="sample/10BT/*"
+                    )
+
+
+    return
+
 #my rewrite to properly take care of relative paths
-def load_pile_lmsys_mixed_tokens():
+def load_pile_lmsys_mixed_tokens(base_model_id):
+    if "gemma" in base_model_id.lower():
+        model_type = "gemma-2"
+    elif "qwen" in base_model_id.lower():
+        model_type = "qwen"
+    else:
+        raise ValueError("Model type not recognized")
+    
+    if type(tokenization_progress[model_type]) == str:
+        tokenized_dataset_id = tokenization_progress[model_type]
+    elif tokenization_progress[model_type] == False:
+        tokenized_dataset_id = tokenize(model_type)
+
     current_dir = os.getcwd()
     if current_dir.endswith("crosscoder-model-diff-replication"):
         # move up one directory
         current_dir = os.path.dirname(current_dir)
-    data_path = os.path.join(current_dir, "data/pile-lmsys-mix-1m-tokenized-gemma-2.pt")
+    data_path = os.path.join(current_dir, "data/pile-lmsys-mix-1m-tokenized-" + model_type + ".pt")
     cache_dir = os.path.join(current_dir, "cache")
-    hf_data_path = os.path.join(current_dir, "data/pile-lmsys-mix-1m-tokenized-gemma-2.hf")
+    hf_data_path = os.path.join(current_dir, "data/pile-lmsys-mix-1m-tokenized-" + model_type + ".hf")
     
 
     try:
@@ -213,7 +243,7 @@ def load_pile_lmsys_mixed_tokens():
     except:
         print("Data is not cached. Loading data from HF")
         data = load_dataset(
-            "ckkissane/pile-lmsys-mix-1m-tokenized-gemma-2",
+            tokenized_dataset_id,
             split="train",
             cache_dir=cache_dir,
         )

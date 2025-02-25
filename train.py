@@ -11,20 +11,30 @@ if torch.cuda.is_available():
 elif torch.backends.mps.is_available():
     device = "mps"
 
+### Gemma ids
+# base_model_id = "google/gemma-2-2b"
+# ft_model_id = "google/gemma-2-2b-it"
+
+### Qwen ids
+base_model_id = "Qwen/Qwen2.5-Math-1.5B"
+# ft_model_id = "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
+ft_model_id = "Dongwei/Qwen2.5-1.5B-Open-R1-GRPO_Math"
+
+all_tokens = load_pile_lmsys_mixed_tokens(base_model_id)
+
 base_model = HookedTransformer.from_pretrained(
-    "gemma-2-2b", 
+    base_model_id, 
     device=device, 
     n_devices=n_devices,
 )
 
-chat_model = HookedTransformer.from_pretrained(
-    "gemma-2-2b-it", 
+ft_model = HookedTransformer.from_pretrained(
+    ft_model_id, 
     device=device, 
     n_devices=n_devices,
 )
 
 # %%
-all_tokens = load_pile_lmsys_mixed_tokens()
 
 # %%
 default_cfg = {
@@ -40,20 +50,20 @@ default_cfg = {
     "dict_size": 2**14,
     "seq_len": 1024,
     "enc_dtype": "fp32",
-    "model_name": "gemma-2-2b",
+    "model_name": "qwen2.5-math-1.5b",
     "site": "resid_pre",
     "device": device,
     "model_batch_size": 4,
-    "log_every": 100,
+    "log_every": 3000,
     "save_every": 10, # originally 30000 
     "dec_init_norm": 0.08,
     "hook_point": "blocks.14.hook_resid_pre",
     "wandb_project": "R1-crosscoder",
     "wandb_entity": "Neelectric",
-    "run_name": "Gemma-2-2b_crosscoder",
+    "run_name": "qwen2.5-math-1.5b_crosscoder",
 }
 cfg = arg_parse_update_cfg(default_cfg)
 
-trainer = Trainer(cfg, base_model, chat_model, all_tokens)
+trainer = Trainer(cfg, base_model, ft_model, all_tokens)
 trainer.train()
 # %%

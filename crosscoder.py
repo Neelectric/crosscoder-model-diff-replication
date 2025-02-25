@@ -30,6 +30,7 @@ class CrossCoder(nn.Module):
         self.dtype = DTYPES[self.cfg["enc_dtype"]]
         torch.manual_seed(self.cfg["seed"])
         # hardcoding n_models to 2
+        print("Hardcoding n_models to 2, keep in mind for 3-way diffing attempts")
         self.W_enc = nn.Parameter(
             torch.empty(2, d_in, d_hidden, dtype=self.dtype)
         )
@@ -175,6 +176,7 @@ class CrossCoder(nn.Module):
         Returns:
             Initialized CrossCoder instance
         """
+        raise ValueError("This function still has gemma cross-coder code, need to update to qwen cross-coder code")
 
         # Download config and weights
         config_path = hf_hub_download(
