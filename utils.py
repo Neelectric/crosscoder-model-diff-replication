@@ -16,7 +16,7 @@ import einops
 import json
 import argparse
 
-from datasets import load_dataset
+from datasets import load_dataset, load_from_disk, concatenate_datasets
 from pathlib import Path
 import plotly.express as px
 from torch.distributions.categorical import Categorical
@@ -236,7 +236,6 @@ def load_pile_lmsys_mixed_tokens(base_model_id):
     cache_dir = os.path.join(current_dir, "cache")
     hf_data_path = os.path.join(current_dir, "data/pile-lmsys-mix-1m-tokenized-" + model_type + ".hf")
     
-
     try:
         print("Loading data from disk")
         all_tokens = torch.load(data_path)
@@ -252,4 +251,36 @@ def load_pile_lmsys_mixed_tokens(base_model_id):
         all_tokens = data["input_ids"]
         torch.save(all_tokens, data_path)
         print(f"Saved tokens to disk")
+    return all_tokens
+
+def shuffle_fineweb_openr1_mixed_tokens(base_model_id):
+    try:
+        fw_ds = load_from_disk("/home/user/repos/R1-crosscoder/data/fineweb-qwen-2.5-math-1.5b")
+    except:
+        print("fineweb not found. Downloading")
+        fw_ds = load_dataset("Neelectric/fineweb-qwen-2.5-math-1.5b")
+    try:
+        or_ds = load_from_disk("/home/user/repos/R1-crosscoder/data/openr1-math-220k-qwen-2.5-math-1.5b")
+    except:
+        print("or not found. Downloading")
+        or_ds = load_dataset("Neelectric/openr1-math-220k-qwen-2.5-math-1.5b")
+
+    # all_tokens = torch.cat([fw_ds["tokenized"], or_ds["tokenized"]])
+    # indices = torch.randperm(all_tokens.shape[0])
+    # all_tokens = all_tokens[indices]
+    combined_ds = concatenate_datasets([fw_ds, or_ds])
+    shuffled_ds = combined_ds.shuffle(seed=49)
+    all_tokens = shuffled_ds["tokenized"]
+    # this is a list of lists, we want a pytorch tensor instead. torch.cat(all_tokens) complains that we want it to be a list of tensors, so we instead do
+    all_tokens = torch.tensor(all_tokens)
+    torch.save(all_tokens, "/home/user/repos/R1-crosscoder/data/fineweb-openr1-mixed-tokens.pt")
+    return all_tokens
+
+def load_fineweb_openr1_mixed_tokens(base_model_id):
+    try:
+        all_tokens = torch.load("/home/user/repos/R1-crosscoder/data/fineweb-openr1-mixed-tokens.pt")
+    except:
+        print("Data is not cached. Shuffling and saving data")
+        all_tokens = shuffle_fineweb_openr1_mixed_tokens(base_model_id)
+    all_tokens = all_tokens.to("cuda")
     return all_tokens

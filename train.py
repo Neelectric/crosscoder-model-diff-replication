@@ -1,6 +1,7 @@
 # %%
 from utils import *
 from trainer import Trainer
+from transformers import AutoModelForCausalLM
 # %%
 # device = 'cuda:0'
 device = "cpu"
@@ -20,18 +21,38 @@ base_model_id = "Qwen/Qwen2.5-Math-1.5B"
 # ft_model_id = "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
 ft_model_id = "Dongwei/Qwen2.5-1.5B-Open-R1-GRPO_Math"
 
-all_tokens = load_pile_lmsys_mixed_tokens(base_model_id)
+### load in the tokens
+all_tokens = load_fineweb_openr1_mixed_tokens(base_model_id)
 
+### load in the models from hf so we can use FA2 for SWA, then pass to TransformerLens
+base_model_hf = AutoModelForCausalLM.from_pretrained(
+    base_model_id, 
+    device_map="cuda:0",
+    torch_dtype=torch.bfloat16,
+    attn_implementation="flash_attention_2",
+    ).to("cuda:0")
+ft_model_hf = AutoModelForCausalLM.from_pretrained(
+    base_model_id, 
+    device_map="cuda:1",
+    torch_dtype=torch.bfloat16,
+    attn_implementation="flash_attention_2",
+    ).to("cuda:1")
 base_model = HookedTransformer.from_pretrained(
     base_model_id, 
-    device=device, 
-    n_devices=n_devices,
+    # device=device, 
+    # n_devices=n_devices,
+    # from_pretrained_kwargs={"attn_implementation":"flash_attention_2",},
+    hf_model=base_model_hf,
+    fold_value_biases=False,
 )
 
 ft_model = HookedTransformer.from_pretrained(
     ft_model_id, 
-    device=device, 
-    n_devices=n_devices,
+    # device=device, 
+    # n_devices=n_devices,
+    # from_pretrained_kwargs={"attn_implementation":"flash_attention_2",},
+    hf_model=ft_model_hf,
+    fold_value_biases=False,
 )
 
 # %%
@@ -39,10 +60,10 @@ ft_model = HookedTransformer.from_pretrained(
 # %%
 default_cfg = {
     "seed": 49,
-    "batch_size": 8192, #originally 4096
+    "batch_size": 4096, #originally 4096
     "buffer_mult": 128,
     "lr": 5e-5,
-    "num_tokens": 400_000_000, #originally 400_000_000
+    "num_tokens": 191_931_392, #originally 400_000_000
     "l1_coeff": 2,
     "beta1": 0.9,
     "beta2": 0.999,
@@ -54,8 +75,8 @@ default_cfg = {
     "site": "resid_pre",
     "device": device,
     "model_batch_size": 4,
-    "log_every": 3000,
-    "save_every": 10, # originally 30000 
+    "log_every": 10,
+    "save_every": 10000, # originally 30000 
     "dec_init_norm": 0.08,
     "hook_point": "blocks.14.hook_resid_pre",
     "wandb_project": "R1-crosscoder",
