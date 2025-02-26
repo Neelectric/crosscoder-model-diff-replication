@@ -6,6 +6,7 @@ import pprint
 import torch.nn.functional as F
 from typing import Optional, Union
 from huggingface_hub import hf_hub_download
+from huggingface_hub import PyTorchModelHubMixin
 
 from typing import NamedTuple
 
@@ -216,3 +217,22 @@ class CrossCoder(nn.Module):
         self = cls(cfg=cfg)
         self.load_state_dict(torch.load(weight_path))
         return self
+    
+
+@torch.no_grad
+def upload_latest_coder():
+    # qwen_cross_coder = CrossCoder.load()
+    print("Loading in last checkpoint of most recent cross-coder version")
+    path = "/home/user/repos/R1-crosscoder/crosscoder-model-diff-replication/checkpoints/"
+    file_list = sorted(os.listdir(path))
+    most_recent_coder = file_list[-1]
+    checkpoints = sorted(os.listdir(path + most_recent_coder))
+    last_checkpoint = checkpoints[-2]
+    last_checkpoint_path = path + most_recent_coder + "/" + last_checkpoint
+    qwen_cross_coder = torch.load(last_checkpoint_path, map_location="cuda")
+    qwen_cross_coder.push_to_hub("Neelectric/qwen-cross-coder")
+    return
+    
+
+if __name__ == "__main__":
+    upload_latest_coder()
