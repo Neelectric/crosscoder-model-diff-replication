@@ -27,16 +27,16 @@ all_tokens = load_fineweb_openr1_mixed_tokens(base_model_id)
 ### load in the models from hf so we can use FA2 for SWA, then pass to TransformerLens
 base_model_hf = AutoModelForCausalLM.from_pretrained(
     base_model_id, 
-    device_map="cuda:0",
+    device_map="cuda",
     torch_dtype=torch.bfloat16,
     attn_implementation="flash_attention_2",
-    ).to("cuda:0")
+    ).to("cuda")
 ft_model_hf = AutoModelForCausalLM.from_pretrained(
-    base_model_id, 
-    device_map="cuda:1",
+    ft_model_id, 
+    device_map="cuda",
     torch_dtype=torch.bfloat16,
     attn_implementation="flash_attention_2",
-    ).to("cuda:1")
+    ).to("cuda")
 base_model = HookedTransformer.from_pretrained(
     base_model_id, 
     # device=device, 
@@ -75,7 +75,7 @@ default_cfg = {
     "site": "resid_pre",
     "device": device,
     "model_batch_size": 4,
-    "log_every": 10,
+    "log_every": 20,
     "save_every": 10000, # originally 30000 
     "dec_init_norm": 0.08,
     "hook_point": "blocks.14.hook_resid_pre",
