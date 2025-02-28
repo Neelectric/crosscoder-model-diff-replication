@@ -34,6 +34,10 @@ class Buffer:
         
         estimated_norm_scaling_factor_A = self.estimate_norm_scaling_factor(cfg["model_batch_size"], model_A)
         estimated_norm_scaling_factor_B = self.estimate_norm_scaling_factor(cfg["model_batch_size"], model_B)
+        self.cfg["estimated_norm_scaling_factor_A"] = estimated_norm_scaling_factor_A
+        self.cfg["estimated_norm_scaling_factor_B"] = estimated_norm_scaling_factor_B
+        print(f"Estimated norm scaling factor A: {estimated_norm_scaling_factor_A}")
+        print(f"Estimated norm scaling factor B: {estimated_norm_scaling_factor_B}")
         
         self.normalisation_factor = torch.tensor(
         [
